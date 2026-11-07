@@ -32,6 +32,35 @@ hook addresses in Let's Go's executable. They are **switched off and hidden** fo
 researches the matching code in these games (see [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md)). Ambient occlusion
 and indirect light were tuned on Let's Go's scenes; they are off by default and may look wrong.
 
+## Launcher
+
+You pick your game folder once on the **Game** page; the launcher checks it's Sword or Shield, sets it up and
+recompiles it. Graphics, image and sound, controls and mods are set here before playing (the graphics and image
+settings are also in the game, on **F12**).
+
+<table>
+<tr>
+<td><img src="docs/images/launcher-game.png" alt="Game page: pick your extracted game folder"></td>
+<td><img src="docs/images/launcher-graphics.png" alt="Graphics page: resolution, anti-aliasing, effects"></td>
+<td><img src="docs/images/launcher-image-sound.png" alt="Image and sound page: volume, brightness, contrast"></td>
+</tr>
+<tr>
+<td align="center">Game</td>
+<td align="center">Graphics</td>
+<td align="center">Image and sound</td>
+</tr>
+<tr>
+<td><img src="docs/images/launcher-controls.png" alt="Controls page: every key rebindable"></td>
+<td><img src="docs/images/launcher-mods.png" alt="Mods page: install LayeredFS romfs mods"></td>
+<td></td>
+</tr>
+<tr>
+<td align="center">Controls</td>
+<td align="center">Mods</td>
+<td></td>
+</tr>
+</table>
+
 ## Requirements
 
 | | |
