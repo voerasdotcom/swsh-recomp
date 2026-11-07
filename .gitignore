@@ -1,0 +1,48 @@
+# Game files and keys: NEVER commit them. This project ships no game files; players bring their own dump.
+*.xci
+*.xcz
+*.nsp
+*.nsz
+*.nca
+*.nso
+*.npdm
+*.nacp
+*.keys
+prod.keys
+title.keys
+romfs.bin
+exefs/
+romfs/
+extracted/
+extracted-*/
+generated/
+generated-*/
+# the recompiled game code (built from the player's own files on their machine)
+lasgame.dll
+lasgame.so
+lasgame.dylib
+lasgame.*.id
+
+# Build
+build/
+
+# Local reference checkouts and tools
+reference/
+tools/bin/
+.venv/
+__pycache__/
+logs/
+
+# Written by the runtime while playing (saves, shader caches, local settings)
+cache/
+save/
+save-shield/
+larecomp.ini
+*.log
+mods/
+
+# Logs the NVIDIA driver writes into the working directory
+NVIDIA Corporation/
+# The Switch's system fonts, taken from your own console (fonts/README.md)
+fonts/*.bfttf
+fonts/*.ttf
