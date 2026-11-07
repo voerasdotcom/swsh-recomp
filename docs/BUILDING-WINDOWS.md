@@ -32,7 +32,16 @@ export PATH="/c/msys64/ucrt64/bin:/c/msys64/usr/bin:$PATH"
 make -j20 build/lasrecomp.exe
 ```
 
-This builds `build/lasrecomp.exe`: the launcher and everything that stands in for the Switch.
+This builds `build/lasrecomp.exe`: the launcher and everything that stands in for the Switch. To start it with a
+double click (or from PowerShell without MSYS2 on the PATH), copy the DLLs it needs next to it once:
+
+```bash
+make dlls
+```
+
+Without that, Windows stops it with "SDL3.dll / avcodec-63.dll ... was not found". From the source tree, the
+launcher's game setup uses the `.venv` generator and MSYS2's clang (`C:\msys64\ucrt64\bin\clang.exe`) when there's no
+bundled Zig.
 
 ## 3. Set up the game from the launcher (simplest)
 

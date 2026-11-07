@@ -260,4 +260,12 @@ gen-helper:
 jogo:
 	tools/publicar_jogo.sh
 
-.PHONY: all gen gen-objs runtime-objs dist deps-windows gen-helper jogo
+# The DLLs build/lasrecomp.exe loads (MSYS2's), its icon and FSR 3.1 next to it, so it also opens with a double click
+# (without MSYS2 on the PATH). It still finds the generator, headers and MSYS2's clang for the game setup in the source
+# tree around it (runtime/paths.c rt_resource, runtime/gamebuild.c).
+dlls: $(EXE)
+	PATH="/c/msys64/ucrt64/bin:$$PATH" ldd $(EXE) | awk '/ucrt64/ {print $$3}' | sort -u | xargs -I{} cp -u {} $(B)/
+	cp -u docs/icon/icon_1024.png $(B)/icon.png
+	cp -u third_party/fidelityfx/bin/amd_fidelityfx_vk.dll $(B)/
+
+.PHONY: all gen gen-objs runtime-objs dist deps-windows gen-helper jogo dlls

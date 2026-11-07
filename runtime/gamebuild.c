@@ -130,6 +130,10 @@ static bool find_tools(Tools *t) {
     else if (rt_resource("zig" SEP "zig" PLAT_EXE_SUFFIX, NULL, t->cc, sizeof t->cc)) t->zig = true;
 #ifndef _WIN32
     else if (rt_dev_mode() && file_exists("/usr/bin/clang")) snprintf(t->cc, sizeof t->cc, "/usr/bin/clang");
+#else
+    // a source checkout without the release's zig: MSYS2's clang (tools/setup_windows.ps1 installs it there)
+    else if (file_exists("C:\\msys64\\ucrt64\\bin\\clang.exe"))
+        snprintf(t->cc, sizeof t->cc, "%s", "C:\\msys64\\ucrt64\\bin\\clang.exe");
 #endif
     else return false;
     if (!rt_resource("gamelib-src" SEP "cpu.h", "runtime/cpu.h", t->inc, sizeof t->inc) ||
@@ -511,6 +515,7 @@ bool gamebuild_run(const char *game_dir, const GameBuildOpts *o, char *why, size
             add(&a, tmp);
             add(&a, at);
 #ifdef _WIN32
+            if (!t.zig) add(&a, "-fuse-ld=lld");  // (MSYS2's clang: lld, as the Makefile links it)
             add(&a, t.implib);
 #endif
         }
