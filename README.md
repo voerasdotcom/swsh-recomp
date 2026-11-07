@@ -1,5 +1,7 @@
 # SwSh Recomp
 
+# P.S. AI made this WHOLE thing!
+
 An experimental native Windows port of **Pokémon Sword** and **Pokémon Shield** (Nintendo Switch), made by **static
 recompilation**: the game's ARM64 code is translated into C and compiled for your PC, and a runtime stands in for the
 Switch (system services, NVN graphics on Vulkan, audio, controllers). **It is not an emulator.**
