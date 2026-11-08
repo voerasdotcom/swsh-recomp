@@ -13,7 +13,7 @@
 #               PAR=<n>    routes at once (default 6; the frames do not depend on it, the frametimes do: for
 #               performance use tools/perf_ab.sh, one run at a time);  FPS60=1 / WILD=1  the experimental modes
 #               VALIDACAO=1  Vulkan validation layers;  TIMEOUT=<s>  per route (default 300)
-#               EXE=<path>  another runtime build (default build/lasrecomp.exe), e.g. a baseline to compare against
+#               EXE=<path>  another runtime build (default build/swsh-recomp.exe), e.g. a baseline to compare against
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export PATH="/c/msys64/ucrt64/bin:/c/msys64/usr/bin:$PATH"
@@ -70,7 +70,7 @@ job() {  # job <jogo> <rota> <rep>
             LARECOMP_FRAMETIME_CSV="$out/frametimes.csv" LARECOMP_SETTINGS=build/bateria/larecomp.ini
         [ -n "$lib" ] && export LARECOMP_GAME_LIB="$lib"
         for kv in "${val[@]}" "${EXTRA[@]}"; do export "$kv"; done
-        exec "${EXE:-./build/lasrecomp.exe}" "$root" --play > "$out/log.txt" 2>&1
+        exec "${EXE:-./build/swsh-recomp.exe}" "$root" --play > "$out/log.txt" 2>&1
     ) &
     local pid=$! timed_out=1
     # Done when the game says it wrote the route's last frame (and left), on a crash, or at the timeout. Not by the pid:

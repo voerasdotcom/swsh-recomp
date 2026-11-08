@@ -233,7 +233,39 @@ static void log_tail_all(const char *path, const char *who) {
 typedef struct {
     char src[1100], obj[1100], log[1100];
     unsigned long long bytes;
+    bool o0;  // compiled without optimization (giant_dispatch, or the slow-compile fallback)
 } Unit;
+
+// Some game functions come out as one C function with thousands of labels and a dispatch switch with a case for every
+// instruction (the targets of indirect jumps inside it). The optimizer's passes grow far faster than linearly on that
+// shape: a 0.9 MB file of one such function took ~20 minutes at -O1 while 1.5 MB of ordinary ones took seconds. Those
+// are compiled at -O0 instead (seconds; the code is the same, only slower to run). A file whose largest
+// `switch (c->pc)` has more cases than this counts as one.
+#define GIANT_DISPATCH_CASES 3000
+// Any compile still running after this long (a shape the check above missed) is restarted at -O0.
+#define SLOW_COMPILE_SECS 240
+
+static bool giant_dispatch(const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (!f) return false;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char *buf = n > 0 ? (char *)malloc((size_t)n + 1) : NULL;
+    bool giant = false;
+    if (buf && fread(buf, 1, (size_t)n, f) == (size_t)n) {
+        buf[n] = 0;
+        for (char *s = strstr(buf, "switch (c->pc) {"); s && !giant; s = strstr(s + 1, "switch (c->pc) {")) {
+            char *end = strstr(s, "default:");
+            int cases = 0;
+            for (char *c = strstr(s, "case "); c && (!end || c < end); c = strstr(c + 5, "case ")) cases++;
+            giant = cases > GIANT_DISPATCH_CASES;
+        }
+    }
+    free(buf);
+    fclose(f);
+    return giant;
+}
 
 typedef struct {
     Unit *u;
@@ -251,6 +283,7 @@ static void add_unit(Units *us, const char *src, const char *work, const char *s
     snprintf(u->log, sizeof u->log, "%s" SEP "%s.log", work, stem);
     struct stat st;
     u->bytes = stat(src, &st) == 0 ? (unsigned long long)st.st_size : 0;
+    u->o0 = false;
 }
 
 // The flags the game code is built with: GAMELIB_CFLAGS (part of its id) and this CPU's level (gamelib_cpu_level, the
@@ -275,10 +308,15 @@ static void add_cflags(Args *a, const Tools *t) {
 
 static char g_work_inc[1200];  // -I<work folder>: gamelib_modules.h, written there for tools/gamelib_entry.c
 
-static PlatProc start_compile(const Tools *t, const Unit *u) {
+static PlatProc start_compile(const Tools *t, Unit *u) {
+    if (!u->o0 && giant_dispatch(u->src)) {
+        u->o0 = true;
+        LOG("[gamebuild] %s: one giant function (dispatch switch over %d cases): compiled at -O0\n", u->src, GIANT_DISPATCH_CASES);
+    }
     Args a = {0};
     compiler(&a, t);
     add_cflags(&a, t);
+    if (u->o0) add(&a, "-O0");  // (after GAMELIB_CFLAGS' -O1: the last -O wins)
     char inc[1200];
     snprintf(inc, sizeof inc, "-I%s", t->inc);
     add(&a, inc);
@@ -385,7 +423,7 @@ bool gamebuild_run(const char *game_dir, const GameBuildOpts *o, char *why, size
     int queued[RT_MAX_MODULES] = {0};  // chunk files of each module put in units so far
     bool tables[RT_MAX_MODULES] = {false};
     int next = 0, jobs = o->jobs < 1 ? 1 : o->jobs > 64 ? 64 : o->jobs;
-    struct { PlatProc p; int unit; } run[64];
+    struct { PlatProc p; int unit; uint64_t t0; } run[64];
     int nrun = 0;
     unsigned long long done_bytes = 0;
     double shown = 0;
@@ -438,12 +476,23 @@ bool gamebuild_run(const char *game_dir, const GameBuildOpts *o, char *why, size
         while (nrun < jobs && next < units.n) {
             PlatProc p = start_compile(&t, &units.u[next]);
             if (!p) { snprintf(why, why_size, "the compiler didn't start"); ok = false; break; }
-            run[nrun].p = p, run[nrun].unit = next++;
+            run[nrun].p = p, run[nrun].unit = next++, run[nrun].t0 = plat_now_ns();
             nrun++;
         }
         for (int k = 0; k < nrun; k++) {
             int r = finished(run[k].p);
-            if (r < 0) continue;
+            if (r < 0) {  // still compiling: past SLOW_COMPILE_SECS at -O1, start it again at -O0
+                Unit *u = &units.u[run[k].unit];
+                if (!u->o0 && plat_now_ns() - run[k].t0 > SLOW_COMPILE_SECS * 1000000000ull) {
+                    LOG("[gamebuild] %s: still compiling after %ds, again at -O0\n", u->src, SLOW_COMPILE_SECS);
+                    stop(run[k].p);
+                    u->o0 = true;
+                    PlatProc p = start_compile(&t, u);
+                    if (!p) { snprintf(why, why_size, "the compiler didn't start"); ok = false; break; }
+                    run[k].p = p, run[k].t0 = plat_now_ns();
+                }
+                continue;
+            }
             Unit *u = &units.u[run[k].unit];
             if (r != 0) {
                 char last[300];

@@ -25,7 +25,7 @@ Requirements
 How to play
 -----------
 1. Unzip this folder anywhere you can write to (e.g. D:\Games\SwShRecomp). Not inside Program Files.
-2. Open SwShRecomp.exe. It is not code-signed: if Windows says "Windows protected your PC", click "More info"
+2. Open swsh-recomp.exe. It is not code-signed: if Windows says "Windows protected your PC", click "More info"
    and then "Run anyway".
 3. Click "Select game folder..." and pick the folder with your extracted game (the one that holds exefs and romfs,
    or any folder above it).

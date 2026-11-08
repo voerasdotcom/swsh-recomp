@@ -49,7 +49,7 @@ def run(name, game, frames, save, fps, turbo, extra, leg=80):
     os.makedirs(os.path.join(out, 'save', 'save_0'), exist_ok=True)
     with open(save, 'rb') as f, open(os.path.join(out, 'save', 'save_0', 'savedata.bin'), 'wb') as g:
         g.write(f.read())
-    exe = extra.pop('EXE', os.path.join(ROOT, 'build', 'lasrecomp.exe'))  # (EXE=: another build or a copy under its own name)
+    exe = extra.pop('EXE', os.path.join(ROOT, 'build', 'swsh-recomp.exe'))  # (EXE=: another build or a copy under its own name)
     ini_keys = {k: v for k, v in extra.items() if not k.startswith('LARECOMP_')}
     env_keys = {k: v for k, v in extra.items() if k.startswith('LARECOMP_')}
     ini = os.path.join(out, 'larecomp.ini')

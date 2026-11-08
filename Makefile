@@ -2,7 +2,7 @@
 # Windows (the supported platform): MSYS2 UCRT64 shell or Git Bash with MSYS2 on PATH, clang + Vulkan renderer
 # (docs/BUILDING-WINDOWS.md). The Linux branch is LAS Recomp's, kept but untested here.
 #   make gen           translate your own game files (extracted/exefs) into generated/
-#   make -j20          build/lasrecomp.exe (runtime) and build/lasgame.dll (the game code)
+#   make -j20          build/swsh-recomp.exe (runtime) and build/lasgame.dll (the game code)
 #   make jogo          a copy to play while build/ is rebuilt (build/jogo/)
 #   make dist          the release zip (build/dist/SwShRecomp-<version>-windows.zip): needs make deps-windows,
 #                      make gen-helper and tools/fetch_zig.sh first
@@ -32,8 +32,8 @@ endif
 # B: build dir. DEPS: a prefix with SDL3 / FFmpeg to use instead of the system's (MSYS2's).
 B         ?= build
 DEPS      ?=
-# EXE_NAME: the exe's name (the release's: SwShRecomp); the game code library imports from the exe by it
-EXE_NAME  ?= lasrecomp
+# EXE_NAME: the exe's name (swsh-recomp, also the release's); the game code library imports from the exe by it
+EXE_NAME  ?= swsh-recomp
 CC       := clang $(CROSS)
 CXX      := clang++ $(CROSS)
 IMGUI    := third_party/imgui
@@ -205,7 +205,7 @@ $(B)/rt/platform/windows_rc.o: runtime/platform/windows.rc docs/icon/icon.ico ru
 	@mkdir -p $(dir $@)
 	$(WINDRES) -I docs/icon -I runtime/platform -O coff $< -o $@
 
-# Windows release: build/dist/SwShRecomp-<version>-windows.zip, top folder "SwShRecomp/": SwShRecomp.exe, the
+# Windows release: build/dist/SwShRecomp-<version>-windows.zip, top folder "SwShRecomp/": swsh-recomp.exe, the
 # DLLs it loads (runs without MSYS2) and what its start screen builds the game code with on the player's machine
 # (runtime/gamebuild.c): the frozen generator (make gen-helper), zig (tools/fetch_zig.sh slimmed by tools/zig_slim.sh:
 # its runtime built ahead of time), gamelib-src/ and the exe's import library. No game code, no game files. The exe is
@@ -221,10 +221,10 @@ dist:
 	@[ -f build/deps-win/lib/libavcodec.dll.a ] || { echo "make deps-windows first (LGPL FFmpeg)"; exit 1; }
 	@[ -d build/helper/lasgen ] || { echo "make gen-helper first (the game code generator)"; exit 1; }
 	@[ -x build/zig/zig.exe ] || { echo "tools/fetch_zig.sh first (the compiler)"; exit 1; }
-	$(MAKE) B=$(WIN_B) DEPS=$(CURDIR)/build/deps-win RELEASE=1 EXE_NAME=SwShRecomp $(WIN_B)/SwShRecomp.exe
-	! nm $(WIN_B)/SwShRecomp.exe | grep ' f_70' >/dev/null  # (no game code inside)
+	$(MAKE) B=$(WIN_B) DEPS=$(CURDIR)/build/deps-win RELEASE=1 EXE_NAME=swsh-recomp $(WIN_B)/swsh-recomp.exe
+	! nm $(WIN_B)/swsh-recomp.exe | grep ' f_70' >/dev/null  # (no game code inside)
 	rm -rf build/dist && mkdir -p "$(DIST)/gamelib-src"
-	cp $(WIN_B)/SwShRecomp.exe $(WIN_B)/lasrecomp.dll.a "$(DIST)/"
+	cp $(WIN_B)/swsh-recomp.exe $(WIN_B)/lasrecomp.dll.a "$(DIST)/"
 	tools/zig_slim.sh $(GAMELIB_CFLAGS)  # (zig with its runtime built ahead of time)
 	cp -R build/helper/lasgen "$(DIST)/"
 	cp -R build/zig-slim "$(DIST)/zig"
@@ -238,7 +238,7 @@ dist:
 	cp LICENSE "$(DIST)/LICENSE.txt"
 	cp LICENSE-LASRecomp "$(DIST)/LICENSE-LASRecomp.txt"
 	cp docs/release-README.txt "$(DIST)/README.txt"
-	PATH="$(CURDIR)/build/deps-win/bin:$$PATH" ldd $(WIN_B)/SwShRecomp.exe | awk '(/ucrt64/ || /deps-win/) && !/vulkan-1/ {print $$3}' | sort -u | \
+	PATH="$(CURDIR)/build/deps-win/bin:$$PATH" ldd $(WIN_B)/swsh-recomp.exe | awk '(/ucrt64/ || /deps-win/) && !/vulkan-1/ {print $$3}' | sort -u | \
 	    xargs -I{} cp -u {} "$(DIST)/"
 	! ls "$(DIST)" | grep -iE 'x264|x265|xvid|postproc'  # (no GPL codec libraries in the release)
 	! find "$(DIST)" \( -iname 'exefs' -o -iname 'romfs' -o -iname 'romfs.bin' -o -iname 'main.npdm' -o -iname '*.nso' \
@@ -260,7 +260,7 @@ gen-helper:
 jogo:
 	tools/publicar_jogo.sh
 
-# The DLLs build/lasrecomp.exe loads (MSYS2's), its icon and FSR 3.1 next to it, so it also opens with a double click
+# The DLLs build/swsh-recomp.exe loads (MSYS2's), its icon and FSR 3.1 next to it, so it also opens with a double click
 # (without MSYS2 on the PATH). It still finds the generator, headers and MSYS2's clang for the game setup in the source
 # tree around it (runtime/paths.c rt_resource, runtime/gamebuild.c).
 dlls: $(EXE)

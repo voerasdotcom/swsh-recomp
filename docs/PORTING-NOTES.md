@@ -21,7 +21,7 @@ build it (`docs/BUILDING-WINDOWS.md`), set up a dump, and read `lasrecomp.log`.
 | Saves | `runtime/services/fs.c` | Shield saves to `save-shield/`, Sword to `save/`. |
 | Mods | `runtime/mods.c` | Packs with both games' folders are searched under the set-up game's title id first. |
 | Defaults | `runtime/settings.c` | Shadow filter defaults to the game's own (the smooth filter was tuned to Let's Go's 11-tap shadows). |
-| Branding | `paths.h`, `windows.rc`, launcher, `Makefile` | "SwSh Recomp", `SwShRecomp.exe`, version 0.1.0, own data folder on Linux / macOS. |
+| Branding | `paths.h`, `windows.rc`, launcher, `Makefile` | "SwSh Recomp", `swsh-recomp.exe`, version 0.1.0, own data folder on Linux / macOS. |
 | Release safety | `Makefile` `dist`, `.gitignore` | `make dist` fails if any game file, key, NACP or game library is in the release folder; `.gitignore` covers dumps, NACPs, `lasgame.*`, `save-shield/`. |
 
 Let's Go Recomp's research documents (HISTORICO, DEPURACAO, MODO-BATALHA, PESQUISA-60FPS...) weren't copied: they

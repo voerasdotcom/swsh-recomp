@@ -15,7 +15,7 @@ BEGIN
     BEGIN
       VALUE "FileDescription", "SwSh Recomp"
       VALUE "ProductName", "SwSh Recomp"
-      VALUE "OriginalFilename", "lasrecomp.exe"
+      VALUE "OriginalFilename", "swsh-recomp.exe"
       VALUE "FileVersion", "0.1"
       VALUE "ProductVersion", "0.1"
     END

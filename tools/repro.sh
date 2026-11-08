@@ -8,7 +8,7 @@
 #
 # Exemplo:  tools/repro.sh base 1300,1400
 #           tools/repro.sh paleta 1300,1400 LARECOMP_VK_SKIN_IDENTITY=1
-#           EXE=./build/jogo/lasrecomp.exe tools/repro.sh jogo 1400   (a cópia de make jogo)
+#           EXE=./build/jogo/swsh-recomp.exe tools/repro.sh jogo 1400   (a cópia de make jogo)
 #           RENDERDOC=1 tools/repro.sh rdc 1300 LARECOMP_RENDERDOC_AT=1290   (captura em build/rdc/)
 #           SAVE="$HOME/Downloads/savedata.bin" tools/repro.sh outro 1400   (outro save, copiado)
 # Turbo (padrão): LARECOMP_FPS=0, sem a trava de 30 fps. A lógica anda um passo por quadro, então os mesmos quadros
@@ -38,9 +38,9 @@ start=$(date +%s)
         LARECOMP_SAVE_DIR=build/test-save LARECOMP_NO_AUDIO=1 LARECOMP_SHOT_AT="$shots"
     for kv in "$@"; do export "$kv"; done
     if [ -n "${RENDERDOC:-}" ]; then  # under RenderDoc: LARECOMP_RENDERDOC_AT=<frame> picks the frame (build/rdc/)
-        exec "/c/Program Files/RenderDoc/renderdoccmd.exe" capture -w -d "$(cygpath -w "$PWD")" ./build/lasrecomp.exe extracted --play             > "logs/repro-$name.log" 2>&1
+        exec "/c/Program Files/RenderDoc/renderdoccmd.exe" capture -w -d "$(cygpath -w "$PWD")" ./build/swsh-recomp.exe extracted --play             > "logs/repro-$name.log" 2>&1
     fi
-    exec "${EXE:-./build/lasrecomp.exe}" extracted --play > "logs/repro-$name.log" 2>&1
+    exec "${EXE:-./build/swsh-recomp.exe}" extracted --play > "logs/repro-$name.log" 2>&1
 ) &
 pid=$!
 last_png=$(printf "build/frames/frame_%05d.png" "$last")
@@ -63,8 +63,8 @@ if [ -n "$winpid" ]; then taskkill //F //T //PID "$winpid" >/dev/null 2>&1 || tr
 # The runtime re-executes itself when the guest address range is taken (runtime/main.c reserve_guest_space): the game
 # is then outside the killed tree. Stop the copies of this exe started since this test began - never older ones (the
 # player's game).
-exe_win=$(cygpath -w "$(realpath "${EXE:-./build/lasrecomp.exe}")")
-powershell.exe -NoProfile -Command "\$t = [DateTimeOffset]::FromUnixTimeSeconds($start).LocalDateTime; Get-CimInstance Win32_Process -Filter \"Name='lasrecomp.exe'\" | Where-Object { \$_.ExecutablePath -eq '$exe_win' -and \$_.CreationDate -ge \$t } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" >/dev/null 2>&1 || true
+exe_win=$(cygpath -w "$(realpath "${EXE:-./build/swsh-recomp.exe}")")
+powershell.exe -NoProfile -Command "\$t = [DateTimeOffset]::FromUnixTimeSeconds($start).LocalDateTime; Get-CimInstance Win32_Process -Filter \"Name='swsh-recomp.exe'\" | Where-Object { \$_.ExecutablePath -eq '$exe_win' -and \$_.CreationDate -ge \$t } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" >/dev/null 2>&1 || true
 wait "$pid" 2>/dev/null || true
 cp build/frames/*.png "build/repro/$name/" 2>/dev/null || true
 FFMPEG=ffmpeg ./.venv/Scripts/python tools/contact_sheet.py "build/repro/$name/contact.png" build/repro/"$name"/frame_*.png >/dev/null

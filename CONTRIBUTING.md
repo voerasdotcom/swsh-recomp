@@ -22,7 +22,7 @@ Open an issue with:
 - what you did, what happened, and what you expected
 - a screenshot or a short video, if it's visual
 - which game (Sword or Shield) and version, as the launcher shows it
-- if the game closed or froze: the `lasrecomp.log` file next to `SwShRecomp.exe`
+- if the game closed or froze: the `lasrecomp.log` file next to `swsh-recomp.exe`
 - if you were using a translation or mod, which one
 
 ## Code

@@ -4,7 +4,7 @@
 // cache/ (shaders / pipelines), fonts/ (optional), larecomp.ini. rt_paths_init() picks it and makes it the
 // working directory, so the rest of the runtime opens those by their relative names. In order:
 //   1. LARECOMP_DATA_ROOT (tests, scratch installs)
-//   2. dev / portable mode: the starting directory already has extracted/ (a source checkout: `./build/lasrecomp
+//   2. dev / portable mode: the starting directory already has extracted/ (a source checkout: `./build/swsh-recomp
 //      extracted`, the test scripts) - used as is
 //   3. macOS: ~/Library/Application Support/com.peiikai.lasrecomp (the .app bundle itself is never written to)
 //      Windows: the folder of the .exe (portable, no installer); refuses to start, with a message, if not writable

@@ -29,10 +29,10 @@ Open **Git Bash** in the project folder and put MSYS2 on the PATH (for that wind
 
 ```bash
 export PATH="/c/msys64/ucrt64/bin:/c/msys64/usr/bin:$PATH"
-make -j20 build/lasrecomp.exe
+make -j20 build/swsh-recomp.exe
 ```
 
-This builds `build/lasrecomp.exe`: the launcher and everything that stands in for the Switch. To start it with a
+This builds `build/swsh-recomp.exe`: the launcher and everything that stands in for the Switch. To start it with a
 double click (or from PowerShell without MSYS2 on the PATH), copy the DLLs it needs next to it once:
 
 ```bash
@@ -46,7 +46,7 @@ bundled Zig.
 ## 3. Set up the game from the launcher (simplest)
 
 ```bash
-./build/lasrecomp.exe
+./build/swsh-recomp.exe
 ```
 
 Click **Select game folder...** and pick the folder with the extracted game (the one holding `exefs` and `romfs`, or a
@@ -79,11 +79,11 @@ writes `generated/gamelib_modules.h` (the module list for `tools/gamelib_entry.c
 ## 4. Play
 
 ```bash
-./build/lasrecomp.exe
+./build/swsh-recomp.exe
 ```
 
 - Saves go in `save/` (`save-shield/` for Shield), settings in `larecomp.ini`, shader caches in `cache/`.
-- `--play` skips the launcher: `./build/lasrecomp.exe extracted --play`.
+- `--play` skips the launcher: `./build/swsh-recomp.exe extracted --play`.
 - `make jogo` puts a copy in `build/jogo/` that opens with a double click and lets you rebuild `build/` while playing.
 
 ## 5. The release zip
@@ -95,7 +95,7 @@ tools/fetch_zig.sh         # the Zig compiler, pinned and checked by sha256
 make dist                  # build/dist/SwShRecomp-<version>-windows.zip
 ```
 
-The zip holds `SwShRecomp.exe`, its DLLs, the generator, a slimmed Zig and the headers the game code compiles
+The zip holds `swsh-recomp.exe`, its DLLs, the generator, a slimmed Zig and the headers the game code compiles
 against. **Nothing from the game goes in it**: `make dist` fails if the release folder contains any game file, key or
 game code (exefs, romfs, NSO/NCA/NSP/XCI, NACP, `lasgame.*`). The version is `RT_APP_VERSION` in `runtime/paths.h`.
 
