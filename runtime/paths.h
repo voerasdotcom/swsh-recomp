@@ -45,6 +45,13 @@ unsigned long long rt_game_files_size(const char *game_dir);
 typedef struct SDL_Window SDL_Window;
 void rt_window_icon(SDL_Window *w);  // the shipped icon.png, if any
 
+// The shader caches in cache/ (glsl.pak, vk_pipelines.bin, spirv/): in use while the game runs, so "Clear shader cache"
+// (F12 menu, Advanced) only asks for it (a marker file) and they are deleted at the next start, before anything loads
+// them (rt_shader_cache_clear_at_start, right after rt_paths_init). on = false withdraws the request.
+void rt_shader_cache_request_clear(bool on);
+bool rt_shader_cache_clear_pending(void);
+void rt_shader_cache_clear_at_start(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -562,10 +562,25 @@ static void texkey_log(const NvnTexture *t, const uint8_t *lin, uint64_t n, uint
     if (on) LOG("[texkey] %016llx %ux%u nvn %#x bpb %u levels %u\n", (unsigned long long)ui2x_key(lin, n), t->width, t->height, t->format, bpb, t->levels);
 }
 
+// The cheap "did this texture change?" check: ~4096 samples spread over the data. The step is odd and each sample is
+// 8 bytes: with an even step (n / 4096 is a multiple of 16 for the usual power-of-two sizes) every sample fell on the
+// same byte of each 16-byte compressed block - an ASTC / BC7 block's mode bits, often the same across a whole texture
+// and between textures - so new data the game streamed into a texture's memory (Sword / Shield's characters) went
+// unseen until the full check every 120 frames: ~4 s of the old image.
 static uint64_t fnv_sample(const uint8_t *p, uint64_t n) {
     uint64_t h = 1469598103934665603ull;
-    uint64_t step = n > 4096 ? n / 4096 : 1;
-    for (uint64_t i = 0; i < n; i += step) { h ^= p[i]; h *= 1099511628211ull; }
+    if (n < 8) {
+        for (uint64_t i = 0; i < n; i++) { h ^= p[i]; h *= 1099511628211ull; }
+        return h ^ n;
+    }
+    uint64_t step = (n > 4096 * 8 ? n / 4096 : 8) | 1;
+    for (uint64_t i = 0; i + 8 <= n; i += step) {
+        uint64_t v;
+        memcpy(&v, p + i, 8);
+        h ^= v;
+        h *= 1099511628211ull;
+        h ^= h >> 29;
+    }
     return h ^ n;
 }
 
@@ -590,6 +605,7 @@ static void upload_pending(TexBackend *b) {
 }
 
 uint64_t prof_tex_checks, prof_tex_samples, prof_tex_full, prof_tex_full_bytes, prof_tex_dyn;
+uint64_t prof_tex_missed;  // (a running total: exec.c's stats line, "tex late")
 // A glyph cache drawn at K x: the part of its K x copy that changed (all of it the first time).
 static void upload_font_cache(NvnTexture *t, TexBackend *b) {
     const uint8_t *px;
@@ -701,8 +717,8 @@ static void upload_texture(NvnTexture *t, TexBackend *b) {
     const uint8_t *mem = (const uint8_t *)(uintptr_t)t->addr;
     static int always_full = -1;
     if (always_full < 0) always_full = getenv("LARECOMP_TEX_FULLHASH") ? 1 : 0;
-    bool full = b->dynamic || !b->uploaded || always_full;
-    if (!full && frame - b->full_frame >= 120 && full_hash_budget >= total) { full = true; full_hash_budget -= total; }
+    bool full = b->dynamic || !b->uploaded || always_full, periodic = false;
+    if (!full && frame - b->full_frame >= 120 && full_hash_budget >= total) { full = periodic = true; full_hash_budget -= total; }
     if (!full) {
         prof_tex_samples++;
         uint64_t sh = fnv_sample(mem, total);
@@ -711,7 +727,16 @@ static void upload_texture(NvnTexture *t, TexBackend *b) {
     prof_tex_full++; prof_tex_full_bytes += total; if (b->dynamic) prof_tex_dyn++;
     uint64_t h = hash_full(mem, total);
     b->full_frame = frame;
-    b->sample_hash = fnv_sample(mem, total);
+    uint64_t sh_now = fnv_sample(mem, total);
+    // new data the quick sample didn't see (it still matches): shown only now, up to 120 frames late. Counted in the
+    // renderer's stats line ("tex late") - it should stay at 0
+    if (periodic && b->uploaded && h != b->data_hash && sh_now == b->sample_hash) {
+        prof_tex_missed++;
+        static int nlog;
+        if (nlog++ < 10) LOG("[tex] %ux%u fmt %#x at %llx: new data the sample missed, shown up to 120 frames late\n",
+                             t->width, t->height, t->format, (unsigned long long)t->addr);
+    }
+    b->sample_hash = sh_now;
     if (b->uploaded && h == b->data_hash) return;
     if (b->uploaded && h != b->data_hash) b->dynamic = true;
     b->data_hash = h;

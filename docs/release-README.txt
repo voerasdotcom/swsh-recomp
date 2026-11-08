@@ -48,7 +48,8 @@ for Atmosphere / LayeredFS (romfs replacements) work; mods of the game's code (e
 
 Controls
 --------
-Keyboard: WASD walk, Space/Enter = A, Q/Backspace = B, Tab = X, R = Y, Z/C = L/R, = and - = Plus/Minus,
+Fast forward: hold Tab to run the game as fast as your PC allows (turn it off on the start screen's Game page).
+Keyboard: WASD walk, Space/Enter = A, Q/Backspace = B, E = X, R = Y, Z/C = L/R, = and - = Plus/Minus,
 arrows = D-pad, Esc = close, F12 = settings. All keys can be changed on the start screen.
 Controllers: any controller SDL recognizes (Xbox, PlayStation, Switch Pro...).
 

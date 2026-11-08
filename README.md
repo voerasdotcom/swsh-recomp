@@ -14,17 +14,17 @@ which is in turn built on **[LAS Recomp](https://github.com/peiikai/LASRecomp)**
 > affiliated with Nintendo, The Pokémon Company, Game Freak or Creatures.
 
 > [!NOTE]
-> **Tested on Pokémon Sword (v1.0.0) [0100ABF008968000], runs perfectly fine with occasional temporary graphical issues.**
+> **Tested on Pokémon Sword (v1.0.0), runs perfectly fine with occasional temporary graphical issues.**
 > Pokémon Shield and later versions haven't been tested yet. This is an early port: the work still to do is listed in
 > [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md). Bug reports and fixes are very welcome
 > ([CONTRIBUTING.md](CONTRIBUTING.md)).
-> I do NOT know whether mods work yet - I will test soon.
 
 ## What carries over from Let's Go Recomp
 
 - Native code, up to **4K** internal resolution, any window size, fullscreen
 - Anti-aliasing **SMAA**, **TAA** or **AMD FSR 3.1**; **FSR 1** for a lower resolution
 - Keyboard, mouse and any controller (Nintendo or Xbox layout), every key rebindable
+- **Fast forward**: hold **Tab** to run the game as fast as your PC allows (can be turned off on the Game page)
 - **Mods**: LayeredFS romfs mods (Atmosphere `contents/<title id>/romfs` packs), several at once
 - Shaders cached on disk; the F12 settings menu in game
 

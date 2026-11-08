@@ -19,6 +19,7 @@
 #include "../nvn/renderer.h"
 #include "../settings.h"
 #include "../input_bind.h"
+#include "../ui/menu.h"
 
 enum {
     BTN_A = 0, BTN_B, BTN_X, BTN_Y, BTN_LSTICK, BTN_RSTICK, BTN_L, BTN_R, BTN_ZL, BTN_ZR, BTN_PLUS, BTN_MINUS,
@@ -52,7 +53,19 @@ static void recompute_keyboard(void) {
     key_ly = (held_key(g_bind_key[BIND_LS_UP]) - held_key(g_bind_key[BIND_LS_DOWN])) * 32767;
     key_rx = (held_key(g_bind_key[BIND_RS_RIGHT]) - held_key(g_bind_key[BIND_RS_LEFT])) * 32767;
     key_ry = (held_key(g_bind_key[BIND_RS_UP]) - held_key(g_bind_key[BIND_RS_DOWN])) * 32767;
+    // Fast forward: Tab held runs the game unpaced (runtime/nvn/objects.c present_pace) - when it's turned on (launcher,
+    // Game page), the F12 menu is closed (Tab moves between its controls) and no Switch input is bound to Tab (a
+    // player's own binding wins)
+    bool tab_bound = false;
+    for (int i = 0; i < BIND_KEY_COUNT; i++) tab_bound |= g_bind_key[i] == SDL_SCANCODE_TAB;
+    int ff = g_settings.fast_forward && !tab_bound && held_key(SDL_SCANCODE_TAB) && !menu_is_open();
+    extern volatile int g_fast_forward;
+    if (ff != g_fast_forward) {
+        g_fast_forward = ff;
+        LOG("[input] fast forward %s\n", ff ? "on (Tab held)" : "off");
+    }
 }
+volatile int g_fast_forward;  // (runtime/nvn/objects.c present_pace: no frame pacing while set)
 
 // A controller's stick never rests at exactly 0, and the game reads any value as a push: the Poké Ball aim crept with
 // the stick let go. Radial dead zone (g_settings.stick_deadzone, the launcher's "stick dead zone"): inside it the stick
@@ -264,6 +277,8 @@ void input_handle_event(const SDL_Event *e) {
     }
     case SDL_EVENT_WINDOW_FOCUS_LOST:
         mouse_release();
+        keys_down[SDL_SCANCODE_TAB] = 0;  // (Tab released elsewhere never reaches us: fast forward must not stay on)
+        recompute_keyboard();
         break;
     case SDL_EVENT_GAMEPAD_ADDED:
         if (!pad) { pad = SDL_OpenGamepad(e->gdevice.which); LOG("[input] gamepad: %s\n", SDL_GetGamepadName(pad)); note_family(); }

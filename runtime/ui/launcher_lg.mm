@@ -682,6 +682,7 @@ extern "C" void launcher_lg_run(const char *root) {
                 if (ui_combo("##padlayout", &lv, lay, 2)) bind_set_layout(lv);
                 ui_tip(T("Which controller buttons are A / B and X / Y. Nintendo: A right, B bottom. Xbox: A bottom, B right, as the letters on an Xbox controller. The button prompts follow.",
                          "Quais botões do controle são A / B e X / Y. Nintendo: A à direita, B embaixo. Xbox: A embaixo, B à direita, como as letras de um controle de Xbox. Os ícones dos botões acompanham."));
+                // (fast forward: on the graphics page, shared with the F12 menu - runtime/ui/settings_ui.mm)
             } else if (tab == TAB_GRAPHICS) {
                 const char *extra[] = {T("Resolution", "Resolução"), T("Fullscreen", "Tela cheia")};
                 float x = ui_graphics_x(extra, 2);

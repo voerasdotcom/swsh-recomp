@@ -52,6 +52,7 @@ Settings g_settings = {
     .reverb = true,
     .movie_audio = true,
     .show_fps = false,
+    .fast_forward = true,
     .render_thread = true,
     .vertex_read = VREAD_AUTO,
     .upscaler = UPSCALE_SHARP,
@@ -114,6 +115,7 @@ static void parse_line(const char *line) {
     else if (!strcmp(key, "reverb")) g_settings.reverb = atoi(val) != 0;
     else if (!strcmp(key, "movie_audio")) g_settings.movie_audio = atoi(val) != 0;
     else if (!strcmp(key, "show_fps")) g_settings.show_fps = atoi(val) != 0;
+    else if (!strcmp(key, "fast_forward")) g_settings.fast_forward = atoi(val) != 0;
     else if (!strcmp(key, "resolution")) {
         int n = atoi(val);
         g_settings.res_mode = !strcmp(val, "dynamic") ? RES_DYNAMIC : (!strcmp(val, "75%") || !strcmp(val, "67%")) ? RES_Q75 :
@@ -211,7 +213,9 @@ void settings_apply_levels(void) {
     if (g_settings.antialias < AA_OFF || g_settings.antialias > AA_FSR3) g_settings.antialias = AA_SMAA;
     g_settings.upscaler_pick = UPSCALE_BILINEAR;
     g_settings.upscaler = g_settings.antialias == AA_FSR3 ? UPSCALE_FSR3 : UPSCALE_BILINEAR;
-    if (g_settings.frame_gen != FG_AUTO && (g_settings.frame_gen < 2 || g_settings.frame_gen > 4)) g_settings.frame_gen = 0;
+    // Frame generation is not available for Sword / Shield (runtime/ui/settings_ui.mm: it made objects flash): off, even
+    // when an older larecomp.ini or LARECOMP_FG_AT asks for it
+    g_settings.frame_gen = 0;
     if (g_settings.fg_method != FG_FLOW) g_settings.fg_method = FG_RERENDER;
 }
 
@@ -297,6 +301,7 @@ void settings_save(void) {
     fprintf(f, "reverb = %d\n", g_settings.reverb);
     fprintf(f, "movie_audio = %d\n", g_settings.movie_audio);
     fprintf(f, "show_fps = %d\n", g_settings.show_fps);
+    fprintf(f, "fast_forward = %d\n", g_settings.fast_forward);
     if (g_settings.res_mode == RES_DYNAMIC) fprintf(f, "resolution = dynamic\n");
     else if (g_settings.res_mode == RES_Q75) fprintf(f, "resolution = 75%%\n");
     else if (g_settings.res_mode == RES_Q25) fprintf(f, "resolution = 25%%\n");

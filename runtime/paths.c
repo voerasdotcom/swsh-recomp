@@ -139,6 +139,39 @@ bool rt_resource(const char *name, const char *dev_rel, char *out, size_t n) {
     return false;
 }
 
+// ---- shader caches (paths.h): relative to the data root, the working directory
+#define SHADER_CLEAR_MARK "cache/clear-shader-cache"
+
+void rt_shader_cache_request_clear(bool on) {
+    if (!on) { remove(SHADER_CLEAR_MARK); return; }
+    mkdir("cache", 0755);
+    FILE *f = fopen(SHADER_CLEAR_MARK, "wb");
+    if (f) { fputs("the shader caches are deleted at the next start (F12 menu, Advanced: Clear shader cache)\n", f); fclose(f); }
+    fprintf(stderr, "[paths] shader cache: cleared at the next start\n");
+}
+
+bool rt_shader_cache_clear_pending(void) { return is_dir("cache") && access(SHADER_CLEAR_MARK, 0) == 0; }
+
+void rt_shader_cache_clear_at_start(void) {
+    if (access(SHADER_CLEAR_MARK, 0) != 0) return;
+    int n = 0;
+    static const char *const files[] = {"cache/glsl.pak", "cache/vk_pipelines.bin", "cache/vk_pipelines.bin.tmp"};
+    for (size_t i = 0; i < sizeof files / sizeof *files; i++) n += remove(files[i]) == 0;
+    DIR *d = opendir("cache/spirv");
+    if (d) {
+        char p[1100];
+        for (struct dirent *e; (e = readdir(d));) {
+            size_t l = strlen(e->d_name);
+            if (l < 5 || strcmp(e->d_name + l - 4, ".spv")) continue;  // (only the cache's own files)
+            snprintf(p, sizeof p, "cache/spirv/%s", e->d_name);
+            n += remove(p) == 0;
+        }
+        closedir(d);
+    }
+    remove(SHADER_CLEAR_MARK);
+    fprintf(stderr, "[paths] shader cache cleared (%d files), as asked in the F12 menu\n", n);
+}
+
 // ---- game files
 // What the setup (runtime/ui/launcher.mm) creates in extracted/, plus what older versions' extraction and manual
 // extractions left there (never read at run time).

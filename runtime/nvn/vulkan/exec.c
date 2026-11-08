@@ -1088,6 +1088,11 @@ const char *renderer_stats(void) {
         const uint32_t *w = (const uint32_t *)(uintptr_t)g_skin_watch;
         LOG("[skin] cb3 %llx now: row8 %08x %08x row9 %08x %08x\n", (unsigned long long)g_skin_watch, w[32], w[33], w[36], w[37]);
     }
+    {   // textures whose new data the quick check missed (runtime/nvn/vulkan/textures.c fnv_sample): a running total
+        extern uint64_t prof_tex_missed;
+        size_t n = strlen(stats_text);
+        snprintf(stats_text + n, sizeof stats_text - n, " | tex late %llu", (unsigned long long)prof_tex_missed);
+    }
     if (stat_skipped) {
         size_t n = strlen(stats_text);
         snprintf(stats_text + n, sizeof stats_text - n, " [skip: noprog %llu compiling %llu failed %llu noobj %llu mode %llu pipe-building %llu pipe-failed %llu]",

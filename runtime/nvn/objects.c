@@ -818,10 +818,11 @@ NVN(nvnQueueAcquireTexture) {
 // Frame pacing: on the console a present waits for the window's present interval in vsyncs (Let's Go: 2, 30 fps).
 // Without it the game ran at ~240 fps and its audio stuttered. LARECOMP_FPS=<n> paces at n fps instead (0: off).
 volatile int g_present_fast;  // runtime/hle/wildbattle.c: no pacing at all (an opening run through behind a dark screen)
+extern volatile int g_fast_forward;  // runtime/hle/input.c: Tab held (fast forward) - no pacing either
 static void present_pace(int interval) {
-    if (g_present_fast) return;
     static int fps = -1;
     static uint64_t next;
+    if (g_present_fast || g_fast_forward) { next = 0; return; }  // (next = 0: back to the game's pace without a burst)
     if (fps < 0) {
         const char *e = getenv("LARECOMP_FPS");
         fps = e ? atoi(e) : -2;  // -2: the game's own interval

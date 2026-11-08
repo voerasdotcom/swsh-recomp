@@ -494,7 +494,7 @@ static const char *const *graphics_labels(int *n) {
     l[3] = UI_T("Shadow filter", "Filtro das sombras", "Фильтр теней");
     l[4] = UI_T("Anti-aliasing", "Antisserrilhado", "Сглаживание");
     l[5] = UI_T("FSR 3.1 mode", "Modo do FSR 3.1", "Режим FSR 3.1");
-    l[6] = UI_T("Frame generation", "Geração de quadros", "Генерация кадров");
+    l[6] = UI_T("Fast forward (hold Tab)", "Avanço rápido (segure Tab)", "Перемотка (удерживать Tab)");  // (was frame generation: removed)
     l[7] = UI_T("Sharpening (AMD RCAS)", "Nitidez (AMD RCAS)", "Резкость (AMD RCAS)");
     l[8] = UI_T("Show FPS", "Mostrar FPS", "Показывать FPS");
     *n = 9;
@@ -529,6 +529,14 @@ void ui_page_graphics(float x, bool known) {
     ui_tip(UI_T("The frame rate in a corner of the screen while playing.",
                 "A taxa de quadros num canto da tela durante o jogo.",
                 "Частота кадров в углу экрана во время игры."));
+    // fast forward (runtime/hle/input.c, runtime/nvn/objects.c present_pace): applies at once, in game too
+    ui_toggle("##ff", l[6], x, &g_settings.fast_forward);
+    ui_tip(UI_T("While you hold Tab, the game runs as fast as your PC allows instead of at its normal speed: "
+                "handy for long walks, text and grinding. Sound may stutter while it's held.",
+                "Enquanto você segura Tab, o jogo roda o mais rápido que o seu PC permite em vez da velocidade normal: "
+                "útil para caminhadas longas, textos e treinos. O som pode falhar enquanto estiver segurando.",
+                "Пока удерживается Tab, игра идёт так быстро, как позволяет ПК, а не с обычной скоростью: "
+                "удобно для долгих прогулок, текста и прокачки. Звук может прерываться."));
     ui_group_gap();
     // SSAO and GI by quality level (their parameters: settings_apply_levels; high = what they had before the levels)
     const char *lv[] = {UI_T("Off", "Desligado", "Выкл."), UI_T("Low", "Baixo", "Низкое"), UI_T("Medium", "Médio", "Среднее"),
@@ -592,27 +600,10 @@ void ui_page_graphics(float x, bool known) {
                     "A nitidez do próprio FSR 3.1 (RCAS, o realce adaptativo de contraste da AMD). 0% desliga.",
                     "Собственная резкость FSR 3.1 (RCAS, адаптивное повышение резкости AMD). 0% — выкл."));
     }
-    // Frame generation (exec.c frame interpolation): 2, 3 or 4 images per world frame, the in-between ones drawn by
-    // running the frame's draws again with their positions between the last frame's and this one's; Auto: as many as the
-    // display's refresh shows evenly and the GPU keeps up with (exec.c ip_images). Any GPU.
-    {
-        const char *fg[] = {UI_T("Off", "Desligado", "Выкл."), "Auto", "2x", "3x", "4x"};
-        int cur = g_settings.frame_gen == FG_AUTO ? 1 : g_settings.frame_gen >= 2 && g_settings.frame_gen <= 4 ? g_settings.frame_gen : 0;
-        ui_row(l[6], x);
-        if (ui_combo("##fg", &cur, fg, 5)) g_settings.frame_gen = cur == 1 ? FG_AUTO : cur ? cur : 0;
-        ui_tip(UI_T("Images per frame of the world (60 fps x 2 = 120). Each extra image costs about half as much "
-                    "as drawing the scene again, and the window shows the game one frame later. Auto: as many as "
-                    "the display's refresh shows evenly (60 fps at 240 Hz: 4x); when the GPU can't keep up, the extra images "
-                    "are drawn at a lower resolution first, then fewer of them.",
-                    "Imagens por quadro do mundo (60 fps x 2 = 120). Cada imagem a mais custa cerca de metade do que "
-                    "desenhar a cena de novo, e a janela mostra o jogo um quadro depois. Auto: tantas quantas a "
-                    "frequência da tela mostra por igual (60 fps a 240 Hz: 4x); quando a GPU não acompanha, as imagens a "
-                    "mais são desenhadas primeiro numa resolução menor, depois em menor número.",
-                    "Кадров на кадр мира (60 fps x 2 = 120). Каждый дополнительный кадр стоит примерно половину "
-                    "повторной отрисовки сцены, а окно показывает игру на кадр позже. Авто: столько, сколько частота "
-                    "экрана показывает равномерно (60 fps при 240 Гц: 4x); если GPU не успевает, дополнительные кадры "
-                    "сначала рисуются в меньшем разрешении, затем их становится меньше."));
-    }
+    // (Frame generation - exec.c frame interpolation - was removed for Sword / Shield: it pairs each draw with the same
+    // object's draw in the frame before by hooks into Let's Go's object-drawing functions, and without them Sword's
+    // repeated meshes were paired by their order, which the game re-sorts as the camera moves: objects flashed in
+    // cutscenes. settings.c keeps it off whatever larecomp.ini says.)
     settings_apply_levels();
 }
 
@@ -700,7 +691,7 @@ void ui_page_advanced(void) {
     // How the frame generation's in-between images are made (exec.c): the frame's draws again (re-render, the default),
     // or the last two images moved along the motion vectors and an image-based flow (optical flow: much cheaper on the
     // GPU, less exact where things uncover). Only with the frame generation on (graphics page).
-    {
+    if (g_settings.frame_gen) {  // (never, for Sword / Shield: frame generation is removed - settings.c)
         const char *fm[] = {UI_T("Re-render", "Redesenhar", "Перерисовка"), UI_T("Optical flow", "Fluxo óptico", "Оптический поток")};
         ui_row(l[4], x);
         ImGui::BeginDisabled(!g_settings.frame_gen);
@@ -816,5 +807,32 @@ void ui_page_advanced(void) {
         g_settings.fg_method = FG_RERENDER;
         g_settings.fx_custom = false;
         settings_apply_levels();
+    }
+
+    // The shader caches (runtime/paths.c rt_shader_cache_*): in use while the game runs, deleted at the next start
+    ui_heading(UI_T("Shader cache", "Cache de shaders", "Кэш шейдеров"));
+    static int pending = -1;  // (the marker file, checked once: the button changes it)
+    if (pending < 0) pending = rt_shader_cache_clear_pending();
+    if (!pending) {
+        if (ui_button(UI_T("Clear shader cache", "Limpar cache de shaders", "Очистить кэш шейдеров"))) {
+            rt_shader_cache_request_clear(true);
+            pending = 1;
+        }
+        ui_tip(UI_T("Deletes the shaders saved on disk; they're cleared the next time the game starts. Try it if graphics "
+                    "look broken after an update. The game then rebuilds them as it goes: expect more pop-in for a while.",
+                    "Apaga os shaders salvos no disco; a limpeza acontece na próxima vez que o jogo abrir. Tente se os gráficos "
+                    "ficarem estranhos depois de uma atualização. O jogo os recria aos poucos: espere mais objetos surgindo atrasados por um tempo.",
+                    "Удаляет сохранённые на диске шейдеры; очистка произойдёт при следующем запуске игры. Помогает, если графика "
+                    "сломалась после обновления. Игра пересоздаст их по ходу: какое-то время объекты будут появляться с задержкой."));
+    } else {
+        ImGui::TextDisabled("%s", UI_T("Will be cleared the next time the game starts.",
+                                       "Será limpo na próxima vez que o jogo abrir.",
+                                       "Будет очищен при следующем запуске игры."));
+        if (ui_button(UI_T("Keep it", "Manter", "Оставить"))) {
+            rt_shader_cache_request_clear(false);
+            pending = 0;
+        }
+        ui_tip(UI_T("Changed your mind: the shader cache stays.", "Mudou de ideia: o cache de shaders fica.",
+                    "Передумали: кэш шейдеров останется."));
     }
 }

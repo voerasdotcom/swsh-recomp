@@ -11,3 +11,6 @@ against the game.
 - Shield saves to `save-shield/`; mods are looked up under the game's title id
 - Let's Go-only options (60 / 120 fps, wild battles, controller skip) hidden; their hooks and patches removed
 - `make dist` refuses to package any game file, key or game code
+- Fast forward: hold Tab (option on the Game page); the X button's default key moves from Tab to E
+- Frame generation removed: it paired draws by Let's Go's object hooks, and on Sword objects flashed in cutscenes
+- Offline friend service (Sword crashed at start-up without it); characters' textures no longer show up seconds late
