@@ -14,7 +14,7 @@ which is in turn built on **[LAS Recomp](https://github.com/peiikai/LASRecomp)**
 > affiliated with Nintendo, The Pokémon Company, Game Freak or Creatures.
 
 > [!NOTE]
-> **Tested on Pokémon Sword (v1.0.0), runs perfectly fine with occasional temporary graphical issues.**
+> **Tested on Pokémon Sword (v1.0.0) [0100ABF008968000], runs perfectly fine with occasional temporary graphical issues.**
 > Pokémon Shield and later versions haven't been tested yet. This is an early port: the work still to do is listed in
 > [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md). Bug reports and fixes are very welcome
 > ([CONTRIBUTING.md](CONTRIBUTING.md)).
