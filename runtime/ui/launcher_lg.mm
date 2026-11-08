@@ -390,6 +390,14 @@ static SDL_HitTestResult SDLCALL launcher_hit(SDL_Window *win, const SDL_Point *
     return pt->y < g_drag_h && pt->x < w - g_buttons_w ? SDL_HITTEST_DRAGGABLE : SDL_HITTEST_NORMAL;
 }
 static int g_game_w = 1280, g_game_h = 720;
+#ifdef _WIN32
+extern "C" void plat_window_round_corners(void *hwnd, bool on);  // (runtime/platform/windows.c)
+static void round_corners(SDL_Window *win, bool on) {
+    plat_window_round_corners(SDL_GetPointerProperty(SDL_GetWindowProperties(win), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL), on);
+}
+#else
+static void round_corners(SDL_Window *, bool) {}
+#endif
 static void window_as_launcher(SDL_Window *win) {
     int w, h;
     SDL_GetWindowSize(win, &w, &h);
@@ -400,6 +408,7 @@ static void window_as_launcher(SDL_Window *win) {
     SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(win), &usable);
     int lh = usable.h * 86 / 100 < 900 ? usable.h * 86 / 100 : 900, lw = lh * 86 / 100;
     SDL_SetWindowBordered(win, false);
+    round_corners(win, true);  // (frameless: square corners on Windows 11 unless asked)
     SDL_SetWindowResizable(win, false);
     SDL_SetWindowSize(win, lw, lh);
     SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
@@ -407,6 +416,7 @@ static void window_as_launcher(SDL_Window *win) {
 }
 static void window_as_game(SDL_Window *win) {
     SDL_SetWindowHitTest(win, NULL, NULL);
+    round_corners(win, false);  // (the game window: the system's default again)
     SDL_SetWindowBordered(win, true);
     SDL_SetWindowResizable(win, true);
     SDL_SetWindowSize(win, g_game_w, g_game_h);

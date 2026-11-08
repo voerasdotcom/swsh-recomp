@@ -8,8 +8,21 @@
 #include <timeapi.h>
 #include <io.h>
 
+#include <dwmapi.h>
+
 #include "../platform.h"
 #include "../paths.h"
+
+// ---- window corners
+// The launcher's window has no system frame, and Windows 11 draws frameless windows with square corners. The
+// compositor rounds them when asked (DWMWA_WINDOW_CORNER_PREFERENCE); Windows 10 ignores the request (square, as
+// before). on = false gives the window back the system's default (the game window, framed: rounded by Windows 11 anyway).
+void plat_window_round_corners(void *hwnd, bool on) {
+    if (!hwnd) return;
+    enum { CORNER_PREFERENCE = 33, CORNER_DEFAULT = 0, CORNER_ROUND = 2 };  // (DWMWA_* / DWMWCP_*: older SDKs lack them)
+    DWORD pref = on ? CORNER_ROUND : CORNER_DEFAULT;
+    DwmSetWindowAttribute((HWND)hwnd, CORNER_PREFERENCE, &pref, sizeof pref);
+}
 
 // ---- guest address space
 // The window is reserved up front and committed per region (plat_commit from the loader / kernel). Anything
