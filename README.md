@@ -18,6 +18,7 @@ which is in turn built on **[LAS Recomp](https://github.com/peiikai/LASRecomp)**
 > Pokémon Shield and later versions haven't been tested yet. This is an early port: the work still to do is listed in
 > [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md). Bug reports and fixes are very welcome
 > ([CONTRIBUTING.md](CONTRIBUTING.md)).
+> I do NOT know whether mods work yet - I will test soon.
 
 ## What carries over from Let's Go Recomp
 
