@@ -13,11 +13,11 @@ which is in turn built on **[LAS Recomp](https://github.com/peiikai/LASRecomp)**
 > own PC from your own dump; nothing from the game is in this repository or in its releases. A fan project, not
 > affiliated with Nintendo, The Pokémon Company, Game Freak or Creatures.
 
-> [!WARNING]
-> **Early, untested port.** This tree adapts Let's Go Recomp's runtime to Sword / Shield: game detection, the module
-> layout, saves, mods, the launcher. It has **not yet been run against the real game**, so expect it not to boot at
-> first. The work still to do is listed in [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md). Bug reports and fixes are
-> very welcome ([CONTRIBUTING.md](CONTRIBUTING.md)).
+> [!NOTE]
+> **Tested on Pokémon Sword (v1.0.0), runs perfectly fine with occasional temporary graphical issues.**
+> Pokémon Shield and later versions haven't been tested yet. This is an early port: the work still to do is listed in
+> [docs/PORTING-NOTES.md](docs/PORTING-NOTES.md). Bug reports and fixes are very welcome
+> ([CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## What carries over from Let's Go Recomp
 
@@ -72,6 +72,8 @@ settings are also in the game, on **F12**).
 | Disk | about 30 GB free during setup (the game's data image plus the generated code) |
 
 ## Supported games
+
+Tested on Pokemon Sword (v1.0.0), runs perfectly fine with occasional temporary graphical issues.
 
 - *Pokémon Sword* (title id `0100ABF008968000`) and *Pokémon Shield* (`01008DB008C2C000`), any region, from your own
   dump (cartridge or eShop)
